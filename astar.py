@@ -1,6 +1,5 @@
 from enum import Enum
 from random import choice
-from heapq import heapify, heappush, heappop, heappushpop
 
 class EightPuzzle(list):
     """
@@ -16,7 +15,6 @@ class EightPuzzle(list):
             self.extend(puzzle)
             self.zero = puzzle.zero
             self.dimension = puzzle.dimension
-
 
     class Moves(Enum):
         up, down, left, right = range(1,5)
@@ -84,77 +82,100 @@ class Solver:
         self.states = []
 
     def solve(self):
-        self.states.append((self.distance(self.puzzle), self.puzzle, 0))
+        #h(x), g(x), state, previous direction, pointer to previous state
+        self.states.append((self.distance(self.puzzle), 0, self.puzzle, 0, None))
         while len(self.states) > 0:
             current = self.pop_closer()
-            print(current[0], len(self.states), current[1], sep="\n"),
-            if current[0] < 4:
+            #print(current[0], current[1], current[0] + current[1], len(self.states))
+            if current[2]  == self.desired:
+                self.print_solution(current)
                 break
             for new in self.generate(current):
                 self.insert_state(new)
-        print(self.states)
+            #input()
+            #print(self.states)
 
+    def print_solution(self, state):
+        self.path = []
+        print("total cost: ", state[1])
+        while state[-1] != None:
+            self.path.append(state[2])
+            state = state[-1]
+        self.path.append(state[2])
+        for step in self.path[::-1]: 
+            print(step, '\n')
 
     def pop_closer(self):
-        min_distance, index = 15 * len(self.desired) , 0
+        min_distance, index = float("inf") , 0
         for i, state in enumerate(self.states):
-            current_distance = state[0]
+            current_distance = state[0] + state[1]
             if current_distance < min_distance:
                 min_distance, index = current_distance, i
         return self.states.pop(index)
 
     def insert_state(self, new_state):
+        found = 0
+        collect = []
         for i, state in enumerate(self.states):
-            # WARNING this '>=' can be tricky
-            if state[1] == new_state[1]:
-                print("epa", i, new_state)
-                if state[2] > new_state[2]:
+            if state[2] == new_state[2]:
+                found += 1
+                collect.append(i)
+                if state[0] + state[1] >= new_state[0] + new_state[1]:
                     self.states[i] = new_state
                 return
         self.states.append(new_state)
 
     def generate(self, current):
         next_steps = []
-        distance, puzzle, before = current
-        if before != 3 and puzzle.can_move(puzzle.Moves.up):
+        #h(x), g(x), state, previous direction, pointer to previous state
+        hx, gx, puzzle, before, pointer = current
+        #distance, puzzle, before = current
+        if before != 4 and puzzle.can_move(puzzle.Moves.up):
             tmp = EightPuzzle(puzzle=puzzle)
             tmp.move_up()
-            next_steps.append((self.distance(tmp), tmp, 1))
+            next_steps.append((self.distance(tmp), gx + 1, tmp, 1, current))
         if before != 3 and puzzle.can_move(puzzle.Moves.right):
             tmp = EightPuzzle(puzzle=puzzle)
             tmp.move_right()
-            next_steps.append((self.distance(tmp), tmp, 2))
+            next_steps.append((self.distance(tmp), gx + 1, tmp, 2, current))
         if before != 2 and puzzle.can_move(puzzle.Moves.left):
             tmp = EightPuzzle(puzzle=puzzle)
             tmp.move_left()
-            next_steps.append((self.distance(tmp), tmp, 3))
+            next_steps.append((self.distance(tmp), gx + 1, tmp, 3, current))
         if before != 1 and puzzle.can_move(puzzle.Moves.down):
             tmp = EightPuzzle(puzzle=puzzle)
             tmp.move_down()
-            next_steps.append((self.distance(tmp), tmp, 4))
+            next_steps.append((self.distance(tmp), gx + 1, tmp, 4, current))
         return next_steps
 
     def distance(self, state):
+        """
+        Manhattan distance
+        """
         value = 0
         dimension = self.puzzle.dimension
         for i in range(len(self.puzzle)):
+            if state[i] == 0:
+                continue
             current_i = self.desired.index(state[i])
             value += abs(current_i % dimension - i % dimension) + abs(current_i // dimension - i // dimension)
         return value
 
     def distance2(self, state):
+        """
+        Hamming distance
+        """
         missed = 0
         for i in range(len(self.puzzle)):
-            if state[i] == self.desired[i]:
+            if state[i] == 0:
+                continue
+            if state[i] != self.desired[i]:
                 missed += 1
-        return len(state) - missed
-
+        return missed
 
 if __name__ == '__main__':
     eightp = EightPuzzle(4)
-    eightp.shuffle(200)
+    eightp.shuffle(100)
     solver = Solver(eightp)
     print(eightp)
     solver.solve()
-
-
