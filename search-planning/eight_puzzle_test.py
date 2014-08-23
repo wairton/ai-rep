@@ -43,7 +43,7 @@ class EightPuzzleSolver(AStarSolver):
 
 if __name__ == '__main__':
     eightp = EightPuzzle(4)
-    eightp.shuffle(100)
+    eightp.shuffle(80)
     solver = EightPuzzleSolver(eightp, list(range(1, len(eightp))) + [0])
     print(eightp)
     solution = solver.solve()
