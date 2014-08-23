@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 #TODO this function is here because a didn't found a better place for it yet.
 def hamming_distance(instance):
     """
@@ -12,30 +14,14 @@ def hamming_distance(instance):
     return missed
 
 
-class AStarState(tuple):
-    @property
-    def g(self):
-        return self[1]
-
-    @property
-    def h(self):
-        return self[0]
+class AStarState(namedtuple("Base", "h g state parent")):
+    def __new__(cls, h, g, state, parent):
+        return super().__new__(cls, h, g, state, parent)
 
     @property
     def f(self):
         return self.g + self.h
 
-    @property
-    def state(self):
-        return self[2]
-
-    @property
-    def previous_move(self):
-        return self[3]
-
-    @property
-    def parent(self):
-        return self[4]
 
 #TODO make this class abstract, maybe using ABC...
 class AStarSolver:
@@ -44,36 +30,44 @@ class AStarSolver:
         #TODO how to insert desired on class?
         self.desired = desired
         #TODO how to insert distance_function on class
-        self.states = []
+        self.open = []
+        self.closed = []
+
 
     def solve(self):
-        #TODO create a new State without pass a tuple as parameter
-        self.states.append(AStarState((self.distance(self.instance), 0, self.instance, 0, None)))
-        while len(self.states) > 0:
-            current = self.pop_closer()
-            if current.state  == self.desired:
+        self.open.append(AStarState(self.distance(self.instance), 0, self.instance, None))
+        while len(self.open) > 0:
+            print(len(self.open), len(self.closed))
+            current = self.pop_lowest()
+            self.closed.append(current)
+            if self.is_final_state(current.state):
                 return self.build_solution(current)
             for new_state in self.generate(current):
+                if new_state in self.closed:
+                    continue
                 self.insert_state(new_state)
 
-    def pop_closer(self):
+    def pop_lowest(self):
         min_distance, index = float("inf") , 0
-        for i, state in enumerate(self.states):
+        for i, state in enumerate(self.open):
             current_distance = state.f
             if current_distance < min_distance:
                 min_distance, index = current_distance, i
-        return self.states.pop(index)
+        return self.open.pop(index)
+
+    def is_final_state(self, state):
+        raise NotImplementedError
 
     def generate(self, current):
         raise NotImplementedError
 
     def insert_state(self, new_state):
-        for i, state in enumerate(self.states):
+        for i, state in enumerate(self.open):
             if state.state == new_state.state:
                 if state.f >= new_state.f:
-                    self.states[i] = new_state
+                    self.open[i] = new_state
                 return
-        self.states.append(new_state)
+        self.open.append(new_state)
 
     def build_solution(self, state):
         self.path = []
