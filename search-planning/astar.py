@@ -33,17 +33,15 @@ class AStarSolver:
         self.open = []
         self.closed = []
 
-
     def solve(self):
         self.open.append(AStarState(self.distance(self.instance), 0, self.instance, None))
         while len(self.open) > 0:
-            print(len(self.open), len(self.closed))
             current = self.pop_lowest()
             self.closed.append(current)
             if self.is_final_state(current.state):
                 return self.build_solution(current)
             for new_state in self.generate(current):
-                if new_state in self.closed:
+                if self.on_closed(new_state):
                     continue
                 self.insert_state(new_state)
 
@@ -54,6 +52,12 @@ class AStarSolver:
             if current_distance < min_distance:
                 min_distance, index = current_distance, i
         return self.open.pop(index)
+
+    def on_closed(self, new_state):
+        for state in self.closed:
+            if state.state == new_state.state:
+                return True
+        return False
 
     def is_final_state(self, state):
         raise NotImplementedError
