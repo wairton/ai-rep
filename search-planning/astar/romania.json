@@ -1,0 +1,20 @@
+{
+  "neighborhood": {
+    "urziceni": [["hirsova", 98], ["vaslui", 142], ["bucharest", 85]], 
+    "pitesti": [["rimnicu_vilcea", 97], ["bucharest", 101], ["craiova", 138]], 
+    "neamt": [["iasi", 87]], "fagaras": [["sibiu", 99], ["bucharest", 211]], 
+    "rimnicu_vilcea": [["sibiu", 80], ["pitesti", 97], ["craiova", 146]], 
+    "lugoj": [["timisoara", 111], ["mehadia", 70]], 
+    "bucharest": [["pitesti", 101], ["giurgiu", 90], ["fagaras", 211], ["urziceni", 85]], 
+    "mehadia": [["lugoj", 70], ["dobreta", 75]], "iasi": [["neamt", 87], ["vaslui", 92]], 
+    "vaslui": [["urziceni", 142], ["iasi", 92]], "hirsova": [["eforie", 86], ["urziceni", 98]], 
+    "arad": [["zerind", 75], ["sibiu", 140], ["timisoara", 118]], 
+    "sibiu": [["arad", 140], ["fagaras", 99], ["oradea", 151], ["rimnicu_vilcea", 80]], 
+    "oradea": [["zerind", 71], ["sibiu", 151]], "timisoara": [["arad", 118], ["lugoj", 111]], 
+    "zerind": [["arad", 75], ["oradea", 71]], "dobreta": [["mehadia", 75], ["craiova", 120]], 
+    "giurgiu": [["bucharest", 90]], "eforie": [["hirsova", 86]], 
+    "craiova": [["dobreta", 120], ["rimnicu_vilcea", 146], ["pitesti", 138]]
+  }, 
+  "straight_distance" : { "arad": 366, "zerind": 374, "eforie": 161, "hirsova": 151, "iasi": 226, "neamt": 234, "urziceni": 80, "vaslui": 199, "oradea": 380, "sibiu": 253, "fagaras": 176, "rimnicu_vilcea": 193, "pitesti": 100, "timisoara": 329, "lugoj": 244, "mehadia": 241, "dobreta": 242, "craiova": 160, "bucharest": 0, "giurgiu": 77}, 
+  "cities": ["arad", "bucharest", "craiova", "dobreta", "eforie", "fagaras", "giurgiu", "hirsova", "iasi", "lugoj", "neamt", "oradea", "pitesti", "rimnicu_vilcea", "sibiu", "timisoara", "urziceni", "vaslui", "zerind"]
+}
