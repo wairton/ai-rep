@@ -1,6 +1,51 @@
 import sys
 
 
+class Solver:
+    def get_stack(self, sudoku):
+        stack = []
+        for node in sudoku.nodes():
+            if node.value == 0:
+                # TODO: do we need to use a .copy() here?
+                stack.append((node.index, node.options))
+        return stack
+
+    def solve(self, sudoku):
+        return self.solve_by_guessing(sudoku)
+
+    def solve_by_iteration(self, sudoku):
+        # print('-' * 50)
+        # print(self)
+        dones = sudoku.iterate()
+        while dones > 0:
+            # print('-' * 50)
+            # print(self)
+            dones = sudoku.iterate()
+        # print('-' * 50)
+        # print(self)
+        return sudoku, sudoku.is_solved
+
+    def solve_by_guessing(self, sudoku):
+        sudoku, is_solved = self.solve_by_iteration(sudoku)
+        if is_solved:
+            return sudoku, True
+        new_line = sudoku.to_line()
+        stack = self.get_stack(sudoku)
+        while len(stack) > 0:
+            index, options = stack.pop()
+            while len(options) > 0:
+                option = options.pop()
+                new_list = list(new_line)
+                new_list[index] = option
+                guess_line = ''.join(str(k) for k in new_list)
+                # print(guess_line)
+                sudoku2, is_solved = self.solve_by_iteration(Sudoku.from_line(guess_line))
+                if is_solved:
+                    # print("opa!")
+                    return sudoku2, True
+        return sudoku, False
+
+
 class Sudoku:
     def __init__(self, lines, columns, blocks):
         self.lines = lines
@@ -12,6 +57,22 @@ class Sudoku:
         for i in range(9):
             s.append(' '.join(str(n.value) for n in self.lines[i]))
         return '\n'.join(s)
+
+    def debug(self):
+        s = []
+        s.append('=' * 80)
+        for i in range(9):
+            if i % 3 == 0:
+                s.append('_' * 144)
+            line = [n.debug() for n in self.lines[i]]
+            f = [' ', ' ', ' | '] * 3
+            s.append(''.join(ll + ff for ll, ff in zip(line, f)))
+            # s.append(' '.join(n.debug() for n in self.lines[i]))
+        s.append('-' * 80)
+        return '\n'.join(s)
+
+    def to_line(self):
+        return ''.join(''.join(str(k.value) for k in self.lines[i]) for i in range(9))
 
     def nodes(self):
         ns = []
@@ -33,7 +94,7 @@ class Sudoku:
         return dones
 
     @property
-    def solved(self):
+    def is_solved(self):
         for node in self.nodes():
             if node.value == 0:
                 return False
@@ -67,14 +128,19 @@ class Sudoku:
         return self.solved
 
     @classmethod
-    def from_line(self, line):
+    def lc_to_block(cls, l, c):
+        return (l // 3) * 3 + (c // 3)
+
+    @classmethod
+    def from_line(cls, line):
+        line = line.strip()
         slines = {}
         scolumns = {}
         sblocks = {}
         for i, v in enumerate(line):
             li = i // 9
             co = i % 9
-            bl = lc_to_block(li, co)
+            bl = Sudoku.lc_to_block(li, co)
             node = Node(li, co, int(v))
             if li not in slines:
                 slines[li] = []
@@ -103,37 +169,72 @@ class Node:
         return self.line, self.column, self.b
 
     @property
+    def index(self):
+        return self.line * 9 + self.column
+
+    @property
     def b(self):
         return (self.line // 3) * 3 + (self.column // 3)
+
+    def debug(self):
+        # return "{} ({}) at {}".format(self.value, self.options, self.position)
+        return "{} ({})".format(self.value, ''.join(str(a) for a in self.options)).ljust(15)
 
     def __str__(self):
         return "{} at [{}, {}]".format(self.value, self.line, self.column)
 
 
-def lc_to_block(l, c):
-    return (l // 3) * 3 + (c // 3)
 
 
 def exp1(filename):
     solved = 0
     nsolved = 0
+    solver = Solver()
     for line in open(filename).readlines():
         sudoku = Sudoku.from_line(line.strip())
-        if sudoku.solve():
+        sudoku, is_solved = solver.solve_by_iteration(sudoku)
+        if is_solved:
             solved += 1
         else:
             nsolved += 1
     print(solved, nsolved)
 
 
-if __name__ == '__main__':
-    exp1(sys.argv[1])
+def exp2(filename):
+    solved = 0
+    nsolved = 0
+    for line in open(filename).readlines():
+        sudoku = Sudoku.from_line(line.strip())
+        print(sudoku.debug())
+        print('-' * 50)
+        sudoku.solve()
+        print(sudoku.debug())
+        print(sudoku.to_line())
+        break
+
+
+def exp3(filename):
+    """
+    Solve sample from scheurblock
+    """
     puzzle = (
         '005090347070026010891037600'
         '000069050907304802020870000'
         '009780534040950080583040200'
     )
-    s = Sudoku.from_line(puzzle)
-    print(s)
-    print(s.solve())
-    print(s)
+    sudoku, is_solved = Solver().solve_by_iteration(Sudoku.from_line(puzzle))
+    print(sudoku)
+
+
+def exp4(filename):
+    solved, nsolved = 0, 0
+    for line in open(filename).readlines():
+       sudoku, is_solved = Solver().solve(Sudoku.from_line(line))
+       if is_solved:
+           solved += 1
+       else:
+           nsolved += 1
+    print(solved, nsolved)
+
+if __name__ == '__main__':
+    exp4(sys.argv[1])
